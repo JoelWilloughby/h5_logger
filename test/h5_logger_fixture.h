@@ -2,7 +2,7 @@
 #include <h5_logger.h>
 
 namespace h5Test {
-        int32_t exec(const char* cmd, std::string& output) {
+    int32_t exec(const char* cmd, std::string& output) {
         char buffer[128];
         FILE* pipe = popen(cmd, "r");
         if (!pipe) {

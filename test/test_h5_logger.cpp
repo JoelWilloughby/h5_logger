@@ -25,3 +25,12 @@ TEST_F(H5LoggerFixture, ElementsStructure) {
 
     ASSERT_EQ(hasGroup("/elements"), 0);
 }
+
+TEST_F(H5LoggerFixture, KeysAsDataSets) {
+    std::vector<std::string> keys;
+    std::string filename = getFilename();
+    ASSERT_TRUE(logger.startLog(keys, filename));
+    ASSERT_TRUE(logger.stopLog());
+
+    ASSERT_EQ(hasGroup("/elements"), 0);
+}

@@ -8,7 +8,7 @@ namespace Logger {
     class H5Manager {
     public:
         H5Manager() : 
-            fd(-1)
+            h5file(nullptr)
         {
         }
 
@@ -17,34 +17,38 @@ namespace Logger {
         }
 
         bool open(const char * filename) {
-            if(fd >= 0) {
+            if(h5file != nullptr) {
                 return false;
             }
 
-            fd = H5Fcreate(filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-            elements_id = H5Gcreate(fd, "/elements", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+            h5file = new H5::H5File(filename, H5F_ACC_TRUNC);
 
-            return isOpen();
+            if(h5file == nullptr) {
+                return false;
+            }
+
+            elements_group = h5file->createGroup("/elements");
+            return true;
         }
 
         bool close() {
-            if(fd < 0) {
+            if(h5file == nullptr) {
                 return true;
             }
 
-            H5Gclose(elements_id);
-            herr_t status = H5Fclose(fd);
-            fd = -1;
-            return status >= 0;
+            elements_group.close();
+            h5file->close();
+
+            return true;
         }
 
         bool isOpen() {
-            return fd >= 0;
+            return h5file != nullptr;
         }
 
     private:
-        hid_t fd;
-        hid_t elements_id;
+        H5::H5File* h5file;
+        H5::Group elements_group;
     };
 
     H5Logger::H5Logger() {

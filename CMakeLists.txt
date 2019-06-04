@@ -7,7 +7,6 @@ find_package(HDF5 REQUIRED)
 include_directories(${HDF5_INCLUDE_DIR})
 
 include_directories(include)
-include_directories(SYSTEM hdf5/serial)
 
 add_subdirectory(src)
 add_subdirectory(examples)

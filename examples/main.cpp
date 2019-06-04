@@ -1,10 +1,9 @@
 
 
-#include <H5Logger.h>
+#include <h5_logger.h>
 
 int main()
 {
-    test_func();
-
+    Logger::H5Logger logger;
     return 0;
 }

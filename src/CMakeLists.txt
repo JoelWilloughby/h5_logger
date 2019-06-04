@@ -1,3 +1,5 @@
 
 add_library(h5loggerstuff 
-            H5Logger.cpp)
+            h5_logger.cpp)
+
+target_link_libraries(h5loggerstuff ${HDF5_LIBRARIES})

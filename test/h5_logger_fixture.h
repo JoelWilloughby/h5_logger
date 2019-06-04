@@ -41,6 +41,12 @@ namespace h5Test {
             sprintf(cmd, "h5dump -g \"%s\" %s", groupPath, getFilename().c_str());
             return h5Test::exec(cmd, h5dumpres);
         }
+
+        int32_t hasDataset(const char * datasetPath) {
+            char cmd[128];
+            sprintf(cmd, "h5dump -d \"%s\" %s", datasetPath, getFilename().c_str());
+            return h5Test::exec(cmd, h5dumpres);
+        }
     };
 }
 

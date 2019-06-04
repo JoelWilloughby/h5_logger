@@ -31,6 +31,30 @@ namespace Logger {
             return true;
         }
 
+        bool addKeys(const std::vector<std::string>& keys) {
+            if(!isOpen()) {
+                return false;
+            }
+
+            hsize_t dim = 100;
+            hsize_t maxdim = H5S_UNLIMITED;
+
+            H5::DataSpace dataspace(1, &dim, &maxdim);
+
+            H5::DSetCreatPropList prop;
+            prop.setChunk(1, &dim);
+
+            for(auto key_it = keys.begin(); key_it != keys.end(); key_it++) {
+                elements_group.createDataSet(
+                    key_it->c_str(), 
+                    H5T_IEEE_F64BE,
+                    dataspace,
+                    prop);
+            }
+
+            return true;
+        }
+
         bool close() {
             if(h5file == nullptr) {
                 return true;
@@ -65,6 +89,12 @@ namespace Logger {
     // Return true on success of the log start, false otherwise
     bool H5Logger::startLog(const std::vector<std::string>& keys, const std::string& path) {
         bool result = manager->open(path.c_str());
+        if(!result) {
+            return false;
+        }
+
+        manager->addKeys(keys);
+
         return result;
     }
 

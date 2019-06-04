@@ -28,9 +28,18 @@ TEST_F(H5LoggerFixture, ElementsStructure) {
 
 TEST_F(H5LoggerFixture, KeysAsDataSets) {
     std::vector<std::string> keys;
+    char buf[256];
+    for(unsigned i=0; i<10; i++) {
+        sprintf(buf, "Key%u", i);
+        keys.push_back(std::string(buf));
+    }
+
     std::string filename = getFilename();
     ASSERT_TRUE(logger.startLog(keys, filename));
     ASSERT_TRUE(logger.stopLog());
 
-    ASSERT_EQ(hasGroup("/elements"), 0);
+    for(auto key_it = keys.begin(); key_it != keys.end(); key_it++) {
+        sprintf(buf, "/elements/%s", key_it->c_str());
+        ASSERT_EQ(hasDataset(buf), 0);
+    }
 }

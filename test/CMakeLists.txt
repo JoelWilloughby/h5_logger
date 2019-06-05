@@ -1,9 +1,20 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-macro(LOCAL_ADD_TEST testname testsource)
-    add_executable(${testname} ${testsource})
-    target_link_libraries(${testname} h5loggerstuff gtest gtest_main pthread)
-    add_test(NAME ${testname} COMMAND ${testname})
-endmacro(LOCAL_ADD_TEST)
 
-LOCAL_ADD_TEST(test_h5_logger test_h5_logger.cpp)
+set(DEPENDENCIES ${PROJECT_NAME} gtest gtest_main pthread)
+set(SOURCES 
+    test_h5_logger.cpp
+    h5_logger_fixture.cpp)
+set(TEST_NAME ${PROJECT_NAME}-test)
+
+add_executable(${TEST_NAME} ${SOURCES})
+target_link_libraries(${TEST_NAME} ${DEPENDENCIES})
+
+add_test(
+    NAME ${TEST_NAME} 
+    COMMAND ${TEST_NAME})
+
+add_custom_target(
+    check 
+    COMMAND ${CMAKE_CTEST_COMMAND}
+    DEPENDS ${PROJECT_NAME})

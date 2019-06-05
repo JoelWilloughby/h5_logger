@@ -1,127 +1,99 @@
 #include <h5_logger.h>
+#include <h5_manager.h>
 
-#include <H5Cpp.h>
 #include <cstdio>
-#include <filesystem>
+#include <cstring>
 
 namespace Logger {
-    class H5Manager {
+
+    class H5Logger : public NormalLogger {
     public:
-        H5Manager() : 
-            h5file(nullptr)
-        {
+        H5Logger() {
+            manager = new H5Manager();
         }
 
-        ~H5Manager() {
-            close();
+        ~H5Logger() {
+            delete manager;
         }
 
-        bool open(const char * filename) {
-            if(h5file != nullptr) {
+        bool startLog(const std::vector<std::string>& keys, const std::string& path) {
+            bool result = manager->open(path.c_str());
+            if(!result) {
                 return false;
             }
 
-            h5file = new H5::H5File(filename, H5F_ACC_TRUNC);
+            manager->initialize(keys, CHUNK_SIZE);
 
-            if(h5file == nullptr) {
-                return false;
-            }
+            dataBuffer = new double[keys.size() * CHUNK_SIZE + 1];
+            chunkOffset = 0;
+            currentChunk = 0;
+            numKeys = keys.size();
 
-            elements_group = h5file->createGroup("/elements");
-            return true;
+            return result;
         }
 
-        bool addKeys(const std::vector<std::string>& keys) {
-            if(!isOpen()) {
-                return false;
-            }
+        bool stopLog() {
+            // Clean up
+            writeChunk();
 
-            hsize_t dim = 100;
-            hsize_t maxdim = H5S_UNLIMITED;
+            delete [] dataBuffer;
 
-            H5::DataSpace dataspace(1, &dim, &maxdim);
+            bool result = manager->close();
 
-            H5::DSetCreatPropList prop;
-            prop.setChunk(1, &dim);
-
-            for(auto key_it = keys.begin(); key_it != keys.end(); key_it++) {
-                elements_group.createDataSet(
-                    key_it->c_str(), 
-                    H5T_IEEE_F64BE,
-                    dataspace,
-                    prop);
-            }
-
-            return true;
+            return result;
         }
 
-        bool close() {
-            if(h5file == nullptr) {
-                return true;
-            }
-
-            elements_group.close();
-            h5file->close();
-
-            return true;
+        bool isLogging() {
+            return manager->isOpen();
         }
 
-        bool isOpen() {
-            return h5file != nullptr;
-        }
-
-    private:
-        H5::H5File* h5file;
-        H5::Group elements_group;
-    };
-
-    H5Logger::H5Logger() {
-        manager = new H5Manager();
-    }
-
-    H5Logger::~H5Logger() {
-        delete manager;
-    }
-    
-    // Should start a log, given a set of keys, and an optional
-    // context for log names, etc
-    //
-    // Return true on success of the log start, false otherwise
-    bool H5Logger::startLog(const std::vector<std::string>& keys, const std::string& path) {
-        bool result = manager->open(path.c_str());
-        if(!result) {
+        bool setDecimation(float decimationRateHz) {
             return false;
         }
 
-        manager->addKeys(keys);
+        bool log(const std::map<std::string, double>& data) {
+            return false;
+        }
 
-        return result;
-    }
+        bool log(const std::vector<double>& data) {
+            auto start = dataBuffer + chunkOffset*numKeys;
+            size_t length = numKeys * sizeof(double);
+            memcpy(dataBuffer + chunkOffset * numKeys, data.data(), length);
 
-    // Should stop a log.
-    bool H5Logger::stopLog() {
-        bool result = manager->close();
-        return result;
-    }
+            chunkOffset++;
 
-    // Return true if the logger is currently logging
-    bool H5Logger::isLogging() {
-        return manager->isOpen();
-    }
+            if(chunkOffset == CHUNK_SIZE) {
+                // Buffer is now full, write it
+                writeChunk();
 
-    // Sets the decimation in Herz
-    bool H5Logger::setDecimation(float decimationRateHz) {
-        return false;
-    }
+            }
 
-    // Logs some data with a key, value map
-    bool H5Logger::log(const std::map<std::string, double>& data) {
-        return false;
-    }
+            return false;
+        }
 
-    // Logs some data with a value vector. Understood that the keys have
-    // Been passed in previously in start log
-    bool H5Logger::log(const std::vector<double>& data) {
-        return false;
+    private:
+        void writeChunk() {
+            if(chunkOffset == 0) {
+                // Nothing to do here
+                return;
+            }
+
+            manager->writeData(dataBuffer, chunkOffset, currentChunk * CHUNK_SIZE);
+
+            currentChunk++;
+            chunkOffset = 0;
+        }
+
+        hsize_t CHUNK_SIZE = 128;
+
+        H5Manager* manager;
+        double * dataBuffer;
+        uint32_t chunkOffset;
+        uint32_t currentChunk;
+        uint32_t numKeys;
+    };
+
+    NormalLogger * CreateLogger(){
+        return new H5Logger();
     }
 }

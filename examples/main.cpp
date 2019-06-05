@@ -4,6 +4,6 @@
 
 int main()
 {
-    Logger::H5Logger logger;
+    Logger::NormalLogger * logger = Logger::CreateLogger();
     return 0;
 }

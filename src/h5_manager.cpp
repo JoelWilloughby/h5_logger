@@ -68,6 +68,7 @@ namespace Logger {
         keys.clear();
         elements_group.close();
         h5file->close();
+        h5file = nullptr;
 
         return true;
     }

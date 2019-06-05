@@ -8,7 +8,7 @@ namespace Logger {
 
     class H5Logger : public NormalLogger {
     public:
-        H5Logger() {
+        H5Logger() : dataBuffer(nullptr) {
             manager = new H5Manager();
         }
 
@@ -36,7 +36,10 @@ namespace Logger {
             // Clean up
             writeChunk();
 
-            delete [] dataBuffer;
+            if(dataBuffer != nullptr) {
+                delete [] dataBuffer;
+                dataBuffer = nullptr;
+            }
 
             bool result = manager->close();
 

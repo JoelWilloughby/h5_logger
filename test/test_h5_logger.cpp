@@ -94,7 +94,6 @@ TEST_F(H5LoggerTest, MultiKeyMultiChunk) {
         data.push_back(1000 * i + 1);
     }
 
-    data.push_back(0);
     ASSERT_TRUE(logger->startLog(keys, filename));
     for(unsigned i=0; i<NUM_ELEMS; i++) {
         for(auto data_it = data.begin(); data_it != data.end(); data_it++) {
@@ -124,7 +123,6 @@ TEST_F(H5LoggerTest, MultiKeySingleChunk) {
         data.push_back(1000 * i + 1);
     }
 
-    data.push_back(0);
     ASSERT_TRUE(logger->startLog(keys, filename));
     for(unsigned i=0; i<NUM_ELEMS; i++) {
         for(auto data_it = data.begin(); data_it != data.end(); data_it++) {
@@ -154,7 +152,6 @@ TEST_F(H5LoggerTest, BigLog) {
         data.push_back(1000 * i + 1);
     }
 
-    data.push_back(0);
     ASSERT_TRUE(logger->startLog(keys, filename));
     for(unsigned i=0; i<NUM_ELEMS; i++) {
         for(auto data_it = data.begin(); data_it != data.end(); data_it++) {

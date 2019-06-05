@@ -12,9 +12,10 @@ target_link_libraries(${TEST_NAME} ${DEPENDENCIES})
 
 add_test(
     NAME ${TEST_NAME} 
-    COMMAND ${TEST_NAME})
+    COMMAND ${TEST_NAME}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_target(
     check 
     COMMAND ${CMAKE_CTEST_COMMAND}
-    DEPENDS ${PROJECT_NAME})
+    DEPENDS ${PROJECT_NAME} ${TEST_NAME})

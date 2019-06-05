@@ -22,7 +22,7 @@ namespace Logger {
                 return false;
             }
 
-            manager->initialize(keys, CHUNK_SIZE);
+            manager->initialize(keys);
 
             dataBuffer = new double[keys.size() * CHUNK_SIZE + 1];
             chunkOffset = 0;
@@ -58,17 +58,16 @@ namespace Logger {
         bool log(const std::vector<double>& data) {
             auto start = dataBuffer + chunkOffset*numKeys;
             size_t length = numKeys * sizeof(double);
-            memcpy(dataBuffer + chunkOffset * numKeys, data.data(), length);
+            memcpy(start, data.data(), length);
 
             chunkOffset++;
 
             if(chunkOffset == CHUNK_SIZE) {
                 // Buffer is now full, write it
                 writeChunk();
-
             }
 
-            return false;
+            return true;
         }
 
     private:
@@ -84,9 +83,10 @@ namespace Logger {
             chunkOffset = 0;
         }
 
-        hsize_t CHUNK_SIZE = 128;
 
-        H5Manager* manager;
+        hsize_t CHUNK_SIZE = 128;
+        H5Manager * manager;
+
         double * dataBuffer;
         uint32_t chunkOffset;
         uint32_t currentChunk;

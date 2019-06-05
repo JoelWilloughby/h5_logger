@@ -26,11 +26,17 @@ namespace Logger {
         return true;
     }
 
-    bool H5Manager::initialize(const std::vector<std::string>& keys, hsize_t chunkSize) {
+    bool H5Manager::initialize(const std::vector<std::string>& keys) {
         if(!isOpen()) {
             return false;
         }
 
+        std::copy(keys.begin(), keys.end(), std::back_inserter(this->keys));
+
+        return true;
+    }
+
+    void H5Manager::makeDatasets(hsize_t chunkSize) {
         hsize_t dim[] = { chunkSize };
         hsize_t maxdim[] = { H5S_UNLIMITED };
 
@@ -43,12 +49,10 @@ namespace Logger {
             datasets.push_back(
                 elements_group.createDataSet(
                     key_it->c_str(), 
-                    H5T_IEEE_F64BE,
+                    H5::PredType::IEEE_F64BE,
                     dataspace,
                     prop));
         }
-
-        return true;
     }
 
     bool H5Manager::close() {
@@ -61,6 +65,7 @@ namespace Logger {
         }
 
         datasets.clear();
+        keys.clear();
         elements_group.close();
         h5file->close();
 
@@ -72,19 +77,32 @@ namespace Logger {
     }
 
     bool H5Manager::writeData(double * data, hsize_t chunkSize, hsize_t currentChunk) {
+        if(datasets.empty()) {
+            // We haven't seen the datasets yet
+            makeDatasets(chunkSize);
+        }
+        else {
+            for(auto dataset_it = datasets.begin(); dataset_it != datasets.end(); dataset_it++) {
+                // Extend the dataset
+                dataset_it->extend(&chunkSize);
+            }
+        }
+
+
         // Setup the buffer space
-        H5::DataSpace bufferspace(1, &chunkSize, &chunkSize);
         hsize_t start = 0;
+        hsize_t bufferSize = chunkSize*datasets.size();
         hsize_t stride = datasets.size();
-        bufferspace.selectHyperslab(H5S_SELECT_SET, &chunkSize, &start, &stride);
+
+        H5::DataSpace bufferspace(1, &bufferSize, &bufferSize);
 
         for(auto dataset_it = datasets.begin(); dataset_it != datasets.end(); dataset_it++) {
-            // Extend the dataset
-            dataset_it->extend(&chunkSize);
+            bufferspace.selectHyperslab(H5S_SELECT_SET, &chunkSize, &start, &stride);
+            start += 1;
+
             H5::DataSpace filespace = dataset_it->getSpace();
             filespace.selectHyperslab(H5S_SELECT_SET, &chunkSize, &currentChunk);
-
-            dataset_it->write(data, H5T_NATIVE_DOUBLE, bufferspace, filespace);
+            dataset_it->write(data, H5::PredType::NATIVE_DOUBLE, bufferspace, filespace);
         }
 
         return true;

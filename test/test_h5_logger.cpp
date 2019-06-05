@@ -25,13 +25,17 @@ TEST_F(H5LoggerTest, ElementsStructure) {
 
 TEST_F(H5LoggerTest, KeysAsDataSets) {
     std::vector<std::string> keys;
+    std::vector<double> data;
+
     char buf[256];
     for(unsigned i=0; i<10; i++) {
         sprintf(buf, "Key%u", i);
         keys.push_back(std::string(buf));
+        data.push_back(i);
     }
 
     ASSERT_TRUE(logger->startLog(keys, filename));
+    ASSERT_TRUE(logger->log(data));
     ASSERT_TRUE(logger->stopLog());
 
     for(auto key_it = keys.begin(); key_it != keys.end(); key_it++) {

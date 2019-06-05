@@ -44,3 +44,132 @@ TEST_F(H5LoggerTest, KeysAsDataSets) {
     }
 }
 
+TEST_F(H5LoggerTest, SingleKeySingleChunk) {
+    std::vector<std::string> keys;
+    std::vector<double> data;
+    const uint32_t NUM_ELEMS = 128;
+
+    keys.push_back("Key");
+
+    data.push_back(0);
+    ASSERT_TRUE(logger->startLog(keys, filename));
+    for(unsigned i=0; i<NUM_ELEMS; i++) {
+        data[0] = i;
+        ASSERT_TRUE(logger->log(data));
+    }
+    ASSERT_TRUE(logger->stopLog());
+
+    int32_t numElems = numElementsInDataSet("elements/Key");
+    ASSERT_EQ(numElems, NUM_ELEMS);
+}
+
+TEST_F(H5LoggerTest, SingleKeyMultiChunk) {
+    std::vector<std::string> keys;
+    std::vector<double> data;
+    const uint32_t NUM_ELEMS = 1024;
+
+    keys.push_back("Key");
+
+    data.push_back(0);
+    ASSERT_TRUE(logger->startLog(keys, filename));
+    for(unsigned i=0; i<NUM_ELEMS; i++) {
+        data[0] = i;
+        ASSERT_TRUE(logger->log(data));
+    }
+    ASSERT_TRUE(logger->stopLog());
+
+    int32_t numElems = numElementsInDataSet("elements/Key");
+    ASSERT_EQ(numElems, NUM_ELEMS);
+}
+
+TEST_F(H5LoggerTest, MultiKeyMultiChunk) {
+    std::vector<std::string> keys;
+    std::vector<double> data;
+    const uint32_t NUM_ELEMS = 1024;
+
+    char buf[256];
+    for(unsigned i=0; i<10; i++) {
+        sprintf(buf, "Key%u", i);
+        keys.push_back(std::string(buf));
+        data.push_back(1000 * i + 1);
+    }
+
+    data.push_back(0);
+    ASSERT_TRUE(logger->startLog(keys, filename));
+    for(unsigned i=0; i<NUM_ELEMS; i++) {
+        for(auto data_it = data.begin(); data_it != data.end(); data_it++) {
+            *data_it /= 2.0;
+        }
+
+        ASSERT_TRUE(logger->log(data));
+    }
+    ASSERT_TRUE(logger->stopLog());
+
+    for(auto key_iter = keys.begin(); key_iter != keys.end(); key_iter++) {
+        sprintf(buf, "elements/%s", key_iter->c_str());
+        int32_t numElems = numElementsInDataSet(buf);
+        ASSERT_EQ(numElems, NUM_ELEMS);
+    }
+}
+
+TEST_F(H5LoggerTest, MultiKeySingleChunk) {
+    std::vector<std::string> keys;
+    std::vector<double> data;
+    const uint32_t NUM_ELEMS = 128;
+
+    char buf[256];
+    for(unsigned i=0; i<10; i++) {
+        sprintf(buf, "Key%u", i);
+        keys.push_back(std::string(buf));
+        data.push_back(1000 * i + 1);
+    }
+
+    data.push_back(0);
+    ASSERT_TRUE(logger->startLog(keys, filename));
+    for(unsigned i=0; i<NUM_ELEMS; i++) {
+        for(auto data_it = data.begin(); data_it != data.end(); data_it++) {
+            *data_it /= 2.0;
+        }
+
+        ASSERT_TRUE(logger->log(data));
+    }
+    ASSERT_TRUE(logger->stopLog());
+
+    for(auto key_iter = keys.begin(); key_iter != keys.end(); key_iter++) {
+        sprintf(buf, "elements/%s", key_iter->c_str());
+        int32_t numElems = numElementsInDataSet(buf);
+        ASSERT_EQ(numElems, NUM_ELEMS);
+    }
+}
+
+TEST_F(H5LoggerTest, BigLog) {
+    std::vector<std::string> keys;
+    std::vector<double> data;
+    const uint32_t NUM_ELEMS = 40000;
+
+    char buf[256];
+    for(unsigned i=0; i<214; i++) {
+        sprintf(buf, "Key%u", i);
+        keys.push_back(std::string(buf));
+        data.push_back(1000 * i + 1);
+    }
+
+    data.push_back(0);
+    ASSERT_TRUE(logger->startLog(keys, filename));
+    for(unsigned i=0; i<NUM_ELEMS; i++) {
+        for(auto data_it = data.begin(); data_it != data.end(); data_it++) {
+            *data_it += 2.0;
+        }
+
+        ASSERT_TRUE(logger->log(data));
+    }
+    ASSERT_TRUE(logger->stopLog());
+
+    for(auto key_iter = keys.begin(); key_iter != keys.end(); key_iter++) {
+        sprintf(buf, "elements/%s", key_iter->c_str());
+        int32_t numElems = numElementsInDataSet(buf);
+        ASSERT_EQ(numElems, NUM_ELEMS);
+    }
+}
+
+

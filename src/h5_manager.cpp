@@ -82,12 +82,16 @@ namespace Logger {
             makeDatasets(chunkSize);
         }
         else {
-            for(auto dataset_it = datasets.begin(); dataset_it != datasets.end(); dataset_it++) {
+            // Need to resize to current usage
+            hsize_t start, end;
+            hsize_t length;
+            for(auto ds_it = datasets.begin(); ds_it != datasets.end(); ds_it++) {
                 // Extend the dataset
-                dataset_it->extend(&chunkSize);
+                ds_it->getSpace().getSelectBounds(&start, &end);
+                length = (end - start) + chunkSize + 1;
+                ds_it->extend(&length);
             }
         }
-
 
         // Setup the buffer space
         hsize_t start = 0;

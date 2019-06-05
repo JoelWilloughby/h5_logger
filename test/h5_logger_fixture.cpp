@@ -1,5 +1,7 @@
 #include <h5_logger_fixture.h>
 
+#include <H5Cpp.h>
+
 namespace h5Test {
     int32_t exec(const char* cmd, std::string& output) {
         char buffer[128];
@@ -35,14 +37,31 @@ namespace h5Test {
 
     int32_t H5LoggerTest::hasGroup(const char * groupPath) {
         char cmd[128];
-        sprintf(cmd, "h5dump -g \"%s\" %s", groupPath, getFilename().c_str());
+        sprintf(cmd, "h5dump -g \"%s\" %s", groupPath, filename.c_str());
         return h5Test::exec(cmd, h5dumpres);
     }
 
     int32_t H5LoggerTest::hasDataset(const char * datasetPath) {
         char cmd[128];
-        sprintf(cmd, "h5dump -d \"%s\" %s", datasetPath, getFilename().c_str());
+        sprintf(cmd, "h5dump -d \"%s\" %s", datasetPath, filename.c_str());
         return h5Test::exec(cmd, h5dumpres);
+    }
+
+    int32_t H5LoggerTest::numElementsInDataSet(const char * datasetPath) {
+
+        int32_t result = -1;
+
+        try {
+            H5::H5File h5file(filename.c_str(), H5F_ACC_RDONLY);
+            H5::DataSet dataset = h5file.openDataSet(datasetPath);
+            result = dataset.getSpace().getSelectNpoints();
+            h5file.close();
+        }
+        catch(...) {
+
+        }
+
+        return result;
     }
 
 }

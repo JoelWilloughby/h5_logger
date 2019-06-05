@@ -19,6 +19,8 @@ namespace h5Test {
 
         int32_t hasDataset(const char * datasetPath);
 
+        int32_t numElementsInDataSet(const char * datasetPath);
+
     private:
         std::string getFilename();
     };

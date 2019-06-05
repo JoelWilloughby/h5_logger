@@ -1,8 +1,5 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-link_directories(~/projects/google/benchmark/build/src)
-include_directories(~/projects/google/benchmark/include)
-
 set(DEPENDENCIES ${PROJECT_NAME} benchmark benchmark_main pthread)
 set(SOURCES 
     benchmark_h5_logger.cpp)

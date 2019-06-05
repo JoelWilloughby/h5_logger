@@ -2,17 +2,27 @@
 #include <h5_logger.h>
 
 #include <vector>
+#include <sys/stat.h>
+
+long getFileSize(const std::string& filename)
+{
+    struct stat stat_buf;
+    int rc = stat(filename.c_str(), &stat_buf);
+    return rc == 0 ? stat_buf.st_size : -1;
+}
 
 static void BM_Test(benchmark::State& state) {
     std::vector<std::string> keys;
     std::vector<double> data;
-    const uint32_t NUM_ELEMS = 40000;
+    const uint32_t NUM_ELEMS = state.range(0);
 
     Logger::NormalLogger * logger = Logger::CreateLogger();
     std::string filename = "bench.h5";
 
+    state.counters["FileSize"] = 0;
+
     char buf[256];
-    for(uint32_t i=0; i<214; i++) {
+    for(uint32_t i=0; i<state.range(1); i++) {
         sprintf(buf, "Key%u", i);
         keys.push_back(std::string(buf));
         data.push_back(1000 * i + 1);
@@ -33,9 +43,21 @@ static void BM_Test(benchmark::State& state) {
             logger->log(data);
         }
         logger->stopLog();
+
+        state.PauseTiming();
+        state.counters["FileSize"] = getFileSize(filename);
+        state.ResumeTiming();
     }
 
     delete logger;
 }
 
-BENCHMARK(BM_Test);
+static void testArgs(benchmark::internal::Benchmark* b) {
+        for(int j=64; j<=256; j*=2)
+    for (int i = 0; i < 11; ++i)
+            b->Args({8<<i,j});        
+}
+
+BENCHMARK(BM_Test)
+    ->Apply(testArgs)
+    ->Unit(benchmark::kMillisecond);

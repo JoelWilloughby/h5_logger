@@ -1,9 +1,9 @@
 
 
-#include <h5_logger.h>
+#include <buffered_logger.h>
 
 int main()
 {
-    Logger::NormalLogger * logger = Logger::CreateLogger();
+    Logger::NormalLogger * logger = Logger::CreateLogger(Logger::H5_LOGGER);
     return 0;
 }

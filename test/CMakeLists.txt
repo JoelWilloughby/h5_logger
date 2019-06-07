@@ -4,6 +4,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 set(DEPENDENCIES ${PROJECT_NAME} gtest gtest_main pthread)
 set(SOURCES 
     test_h5_logger.cpp
+    test_ldf_logger.cpp
     h5_logger_fixture.cpp)
 set(TEST_NAME ${PROJECT_NAME}-test)
 

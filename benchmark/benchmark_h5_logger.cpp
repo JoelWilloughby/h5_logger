@@ -1,22 +1,18 @@
+#include <benchmark_utils.h>
+#include <buffered_logger.h>
+
 #include <benchmark/benchmark.h>
-#include <h5_logger.h>
 
 #include <vector>
-#include <sys/stat.h>
+#include <string>
 
-long getFileSize(const std::string& filename)
-{
-    struct stat stat_buf;
-    int rc = stat(filename.c_str(), &stat_buf);
-    return rc == 0 ? stat_buf.st_size : -1;
-}
 
 static void BM_Test(benchmark::State& state) {
     std::vector<std::string> keys;
     std::vector<double> data;
     const uint32_t NUM_ELEMS = state.range(0);
 
-    Logger::NormalLogger * logger = Logger::CreateLogger();
+    Logger::NormalLogger * logger = Logger::CreateLogger(Logger::H5_LOGGER);
     std::string filename = "bench.h5";
 
     state.counters["FileSize"] = 0;

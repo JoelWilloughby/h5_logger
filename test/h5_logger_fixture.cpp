@@ -2,7 +2,7 @@
 
 #include <H5Cpp.h>
 
-namespace h5Test {
+namespace LoggerTest {
     int32_t exec(const char* cmd, std::string& output) {
         char buffer[128];
         FILE* pipe = popen(cmd, "r");
@@ -24,7 +24,7 @@ namespace h5Test {
 
     void H5LoggerTest::SetUp() {
         filename = getFilename();
-        logger = Logger::CreateLogger();
+        logger = Logger::CreateLogger(Logger::H5_LOGGER);
     }
 
     void H5LoggerTest::TearDown() {
@@ -38,13 +38,13 @@ namespace h5Test {
     int32_t H5LoggerTest::hasGroup(const char * groupPath) {
         char cmd[128];
         sprintf(cmd, "h5dump -g \"%s\" %s", groupPath, filename.c_str());
-        return h5Test::exec(cmd, h5dumpres);
+        return LoggerTest::exec(cmd, h5dumpres);
     }
 
     int32_t H5LoggerTest::hasDataset(const char * datasetPath) {
         char cmd[128];
         sprintf(cmd, "h5dump -d \"%s\" %s", datasetPath, filename.c_str());
-        return h5Test::exec(cmd, h5dumpres);
+        return LoggerTest::exec(cmd, h5dumpres);
     }
 
     int32_t H5LoggerTest::numElementsInDataSet(const char * datasetPath) {

@@ -26,7 +26,7 @@ namespace Logger {
         return true;
     }
 
-    bool H5Manager::initialize(const std::vector<std::string>& keys) {
+    bool H5Manager::initialize(const std::vector<std::string>& keys, uint64_t startTime) {
         if(!isOpen()) {
             return false;
         }
@@ -77,7 +77,10 @@ namespace Logger {
         return h5file != nullptr;
     }
 
-    bool H5Manager::writeData(double * data, hsize_t chunkSize, hsize_t currentChunk) {
+    bool H5Manager::writeData(double * data, uint64_t * times, size_t _chunkSize, size_t _currentChunk) {
+        hsize_t chunkSize = _chunkSize;
+        hsize_t currentChunk = _currentChunk;
+
         if(datasets.empty()) {
             // We haven't seen the datasets yet
             makeDatasets(chunkSize);

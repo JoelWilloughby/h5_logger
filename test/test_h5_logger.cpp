@@ -4,7 +4,7 @@
 
 #include <cstdio>
 
-using h5Test::H5LoggerTest;
+using LoggerTest::H5LoggerTest;
 
 TEST_F(H5LoggerTest, CreatesFile) {
     std::vector<std::string> keys;

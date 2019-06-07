@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
-#include <h5_logger.h>
+#include <buffered_logger.h>
 
 #include <string>
 
-namespace h5Test {
+namespace LoggerTest {
 
     class H5LoggerTest : public ::testing::Test {
     protected:
